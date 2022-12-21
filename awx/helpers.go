@@ -58,7 +58,7 @@ func buildDiagUpdateFail(tfMethode string, id int, err error) diag.Diagnostics {
 func buildDiagNotFoundFail(tfMethode string, id int, err error) diag.Diagnostics {
 	return buildDiagnosticsMessage(
 		fmt.Sprintf("Unable to fetch %s", tfMethode),
-		"Unable to load %s with id %d: got %s",
+		"Unable to load %s with id %d: got %v",
 		tfMethode, id, err.Error(),
 	)
 }
@@ -77,13 +77,17 @@ func buildDiagDeleteFailDetails(tfMethode, detailsString string) string {
 }
 
 func convertStateIDToNummeric(tfElement string, d *schema.ResourceData) (int, diag.Diagnostics) {
+	return convertStrToNumeric(tfElement, d.Id())
+}
+
+func convertStrToNumeric(tfElement string, str string) (int, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	id, err := strconv.Atoi(d.Id())
+	id, err := strconv.Atoi(str)
 	if err != nil {
 		return id, buildDiagnosticsMessage(
-			fmt.Sprintf("%s, State ID Not Converted", tfElement),
-			"Value in State %s is`t nummeric, %s",
-			d.Id(), err.Error(),
+			fmt.Sprintf("%s, String Not Converted", tfElement),
+			"Value of str %s isn't nummeric, %s",
+			str, err.Error(),
 		)
 	}
 	return id, diags

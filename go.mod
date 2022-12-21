@@ -8,8 +8,9 @@ require (
 	github.com/mrcrilly/goawx v0.1.4
 	github.com/stretchr/testify v1.6.1
 	gopkg.in/yaml.v2 v2.3.0
+	github.com/mitchellh/mapstructure v1.4.1
 )
 
-replace github.com/mrcrilly/goawx => github.com/nolte/goawx v0.1.6
+replace github.com/mrcrilly/goawx => /go/src/github.com/h3nd24/goawx
 
 // replace github.com/mrcrilly/goawx => /go/src/github.com/mrcrilly/goawx

@@ -48,6 +48,7 @@ func Provider() *schema.Provider {
 			"awx_inventory":                          resourceInventory(),
 			"awx_job_template_credential":            resourceJobTemplateCredentials(),
 			"awx_job_template":                       resourceJobTemplate(),
+			"awx_job_template_survey":                resourceSurvey(),
 			"awx_organization":                       resourceOrganization(),
 			"awx_project":                            resourceProject(),
 			"awx_workflow_job_template_node_allways": resourceWorkflowJobTemplateNodeAllways(),
