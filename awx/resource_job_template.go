@@ -30,6 +30,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/go-cty/cty"
 	awx "github.com/mrcrilly/goawx/client"
 )
 
@@ -55,9 +56,13 @@ func resourceJobTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "One of: run, check, scan",
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					expectedList := []any{"run", "check", "scan"}
+					return validateInCreateDiag("resource_job_template.job_type", v, expectedList)
+				},
 			},
 			"inventory_id": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Required: true,
 			},
 			"project_id": &schema.Schema{
@@ -85,6 +90,10 @@ func resourceJobTemplate() *schema.Resource {
 				Optional:    true,
 				Default:     0,
 				Description: "One of 0,1,2,3,4,5",
+				ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
+					expectedList := []any{0, 1, 2, 3, 4, 5}
+					return validateInCreateDiag("resource_job_template.verbosity", v, expectedList)
+				},
 			},
 			"extra_vars": &schema.Schema{
 				Type:     schema.TypeString,
@@ -341,6 +350,7 @@ func resourceJobTemplateRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func setJobTemplateResourceData(d *schema.ResourceData, r *awx.JobTemplate) *schema.ResourceData {
+	log.Printf("Returned Job Template %q", r)
 	d.Set("allow_simultaneous", r.AllowSimultaneous)
 	d.Set("ask_credential_on_launch", r.AskCredentialOnLaunch)
 	d.Set("ask_job_type_on_launch", r.AskJobTypeOnLaunch)
@@ -348,6 +358,9 @@ func setJobTemplateResourceData(d *schema.ResourceData, r *awx.JobTemplate) *sch
 	d.Set("ask_skip_tags_on_launch", r.AskSkipTagsOnLaunch)
 	d.Set("ask_tags_on_launch", r.AskTagsOnLaunch)
 	d.Set("ask_variables_on_launch", r.AskVariablesOnLaunch)
+	d.Set("ask_verbosity_on_launch", r.AskVerbosityOnLaunch)
+	d.Set("ask_diff_mode_on_launch", r.AskDiffModeOnLaunch)
+	d.Set("ask_inventory_on_launch", r.AskInventoryOnLaunch)
 	d.Set("description", r.Description)
 	d.Set("extra_vars", r.ExtraVars)
 	d.Set("force_handlers", r.ForceHandlers)
@@ -368,6 +381,7 @@ func setJobTemplateResourceData(d *schema.ResourceData, r *awx.JobTemplate) *sch
 	d.Set("start_at_task", r.StartAtTask)
 	d.Set("survey_enabled", r.SurveyEnabled)
 	d.Set("verbosity", r.Verbosity)
+	d.Set("timeout", r.Timeout)
 	d.SetId(strconv.Itoa(r.ID))
 	return d
 }

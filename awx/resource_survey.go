@@ -30,6 +30,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/mitchellh/mapstructure"
 	awx "github.com/mrcrilly/goawx/client"
 )
@@ -66,61 +67,57 @@ func resourceSurvey() *schema.Resource {
 						"question_name": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"question_description": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
+							ForceNew: true,
 						},
 						"required": {
 							Type:     schema.TypeBool,
-							Required: true,
+							Optional: true,
+							ForceNew: true,
+							Default:  false,
 						},
 						"variable": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"type": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 							ValidateDiagFunc: func(v any, p cty.Path) diag.Diagnostics {
-								value := v.(string)
-								expectedList := [6]string{"text","multiplechoice","multiselect","password","integer","float"}
-								var diags diag.Diagnostics
-								for _, expected := range expectedList {
-									if value == expected {
-										return diags
-									}
-								}
-								// not found in expected list, abort
-								diag := diag.Diagnostic{
-									Severity: diag.Error,
-									Summary:  "wrong value",
-									Detail:   fmt.Sprintf("%q is not %q", value, expectedList),
-								}
-								diags = append(diags, diag)
-								return diags
+								expectedList := []any{"text","multiplechoice","multiselect","password","integer","float"}
+								return validateInCreateDiag("resource_survey.spec.type", v, expectedList)
 							},
 						},
 						"min": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  0,
+							ForceNew: true,
 						},
 						"max": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  1024,
+							ForceNew: true,
 						},
 						"default": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
+							ForceNew: true,
 						},
 						"choices": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "",
+							ForceNew: true,
 						},
 					},
                                 },

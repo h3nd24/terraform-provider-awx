@@ -103,6 +103,23 @@ func buildDiagnosticsMessage(diagSummary, diagDetails string, detailsVars ...int
 	return diags
 }
 
+func validateInCreateDiag(context string, v any, expectedList []any) diag.Diagnostics {
+	var diags diag.Diagnostics
+	for _, expected := range expectedList {
+		if v == expected {
+			return diags
+		}
+	}
+	// not found in expected list, abort
+	diag := diag.Diagnostic{
+		Severity: diag.Error,
+		Summary:  "wrong value",
+		Detail:   fmt.Sprintf("[%s] %q is not in %q", context, v, expectedList),
+	}
+	diags = append(diags, diag)
+	return diags
+}
+
 func CredentialsServiceDeleteByID(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 

@@ -53,10 +53,11 @@ func resourceOrganization() *schema.Resource {
 				Description: "Local absolute file path containing a custom Python virtualenv to use",
 			},
 		},
-		//Importer: &schema.ResourceImporter{
-		//	State: schema.ImportStatePassthrough,
-		//},
-		//
+
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+		
 		//Timeouts: &schema.ResourceTimeout{
 		//	Create: schema.DefaultTimeout(1 * time.Minute),
 		//	Update: schema.DefaultTimeout(1 * time.Minute),

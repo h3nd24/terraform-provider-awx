@@ -13,7 +13,6 @@ package awx
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,8 +25,15 @@ func dataSourceCredentialByID() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": &schema.Schema{
 				Type:        schema.TypeInt,
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 				Description: "Credential id",
+			},
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "Credential name",
 			},
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
@@ -45,21 +51,50 @@ func dataSourceCredentialByID() *schema.Resource {
 
 func dataSourceCredentialByIDRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	client := m.(*awx.AWX)
-	id := d.Get("id").(int)
-	cred, err := client.CredentialsService.GetCredentialsByID(id, map[string]string{})
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Unable to fetch credential",
-			Detail:   "The given credential ID is invalid or malformed",
-		})
+	params := make(map[string]string)
+	if name, okName := d.GetOk("name"); okName {
+		params["name"] = name.(string)
 	}
 
+	if credId, okCredID := d.GetOk("id"); okCredID {
+		params["id"] = strconv.Itoa(credId.(int))
+	}
+
+	if len(params) == 0 {
+		return buildDiagnosticsMessage(
+			"Get: Missing Parameters",
+			"Please use one of the selectors (name or id)",
+		)
+	}
+	creds, _, err := client.CredentialsService.ListCredentials(params)
+	if err != nil {
+		return buildDiagnosticsMessage(
+			"Get: Fail to fetch Credential",
+			"Fail to find the credential got: %s",
+			err.Error(),
+		)
+	}
+	if len(creds) > 1 {
+		return buildDiagnosticsMessage(
+			"Get: find more than one Element",
+			"The Query Returns more than one Credentials, %d",
+			len(creds),
+		)
+	}
+	if len(creds) == 0 {
+		return buildDiagnosticsMessage(
+			"Get: find no Element",
+			"The Query Returns no Credentials, %d",
+			len(creds),
+		)
+	}
+
+	cred := creds[0]
+	d.Set("id", cred.ID)
+	d.Set("name", cred.Name)
 	d.Set("username", cred.Inputs["username"])
 	d.Set("kind", cred.Kind)
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
-
+	d.SetId(strconv.Itoa(cred.ID))
 	return diags
 }
